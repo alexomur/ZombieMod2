@@ -1,4 +1,8 @@
-﻿namespace ZombieMod2
+﻿using System.Collections.Generic;
+using System.Linq;
+using Exiled.Events.Handlers;
+
+namespace ZombieMod2
 {
     using Exiled.API.Enums;
     using Exiled.API.Features;
@@ -11,6 +15,14 @@
         
         public EventHandler EventHandler { get; private set; }
 
+        public Dictionary<Player, float> Balances =>
+            Player.List.ToDictionary(player => player, player => 0f);
+
+        public List<Player> Players =>
+            Player.List.ToList();
+
+        public int WavesPassed = 0;
+        
         public override void OnEnabled()
         {
             Instance = this;

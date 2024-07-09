@@ -1,9 +1,12 @@
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Exiled.API.Enums;
 using Exiled.API.Features;
 using Exiled.API.Features.Items;
 using PlayerRoles;
+using UnityEngine;
+using Player = Exiled.API.Features.Player;
 
 namespace ZombieMod2
 {
@@ -26,13 +29,13 @@ namespace ZombieMod2
     
     public class AmmoBox
     {
-        public int Nato9 { get; set; }
-        public int Nato556 { get; set; }
-        public int Nato762 { get; set; }
-        public int Ammo44Cal { get; set; }
-        public int Ammo12Gauge { get; set; }
+        public ushort Nato9 { get; set; }
+        public ushort Nato556 { get; set; }
+        public ushort Nato762 { get; set; }
+        public ushort Ammo44Cal { get; set; }
+        public ushort Ammo12Gauge { get; set; }
 
-        public AmmoBox(int nato9 = 0, int nato556 = 0, int nato762 = 0, int ammo44Cal = 0, int ammo12Gauge = 0)
+        public AmmoBox(ushort nato9 = 0, ushort nato556 = 0, ushort nato762 = 0, ushort ammo44Cal = 0, ushort ammo12Gauge = 0)
         {
             this.Nato9 = nato9;
             this.Nato556 = nato556;
@@ -41,6 +44,18 @@ namespace ZombieMod2
             this.Ammo12Gauge = ammo12Gauge;
         }
         public AmmoBox() {}
+
+        public Dictionary<AmmoType, ushort> ToDictionary()
+        {
+            return new Dictionary<AmmoType, ushort>()
+            {
+                { AmmoType.Nato9, this.Nato9 },
+                { AmmoType.Nato556, this.Nato556 },
+                { AmmoType.Nato762, this.Nato762 },
+                { AmmoType.Ammo44Cal, this.Ammo44Cal },
+                { AmmoType.Ammo12Gauge, this.Ammo12Gauge }
+            };
+        }
     }
 
     public class AmmoOffer
@@ -89,23 +104,88 @@ namespace ZombieMod2
         public List<Perk> Perks { get; set; }
         public AmmoBox AmmoBox { get; set; }
         public RoleTypeId RoleTypeId { get; set; }
+        public float MaxHp { get; set; }
 
-        public Preset(string name, List<ItemType> itemTypes, List<Perk> perks, AmmoBox ammoBox, RoleTypeId roleTypeId)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="itemTypes"></param>
+        /// <param name="perks"></param>
+        /// <param name="ammoBox"></param>
+        /// <param name="roleTypeId"></param>
+        /// <param name="maxHp">Optional parameter; For StartZombiePreset is equal to StartZombieHp; For other Presets it is equal to 100</param>
+        public Preset(string name, List<ItemType> itemTypes, List<Perk> perks, AmmoBox ammoBox, RoleTypeId roleTypeId, float maxHp = 100)
         {
             this.Name = name;
             this.ItemTypes = itemTypes;
             this.Perks = perks;
             this.AmmoBox = ammoBox;
             this.RoleTypeId = roleTypeId;
+            this.MaxHp = maxHp;
         }
         public Preset() {}
+
+        /// <summary>
+        /// Use if you need to completely clear the player and give a new preset
+        /// </summary>
+        public void SpawnPreset(Player player, RoomType roomType = RoomType.Unknown)
+        {
+            player.Role.Set(RoleTypeId);
+            player.ClearInventory();
+            if (roomType != RoomType.Unknown)
+            {
+                Room room = Room.List.FirstOrDefault(r => r.Type == roomType);
+                if (room != null)
+                    player.Position = room.Position + Vector3.up;
+                else
+                    Log.Warn($"Room {roomType} not found!");
+            }
+
+            foreach (var item in ItemTypes)
+            {
+                // Check if the player's inventory is full
+                if (player.Inventory.UserInventory.Items.Count < 8)
+                {
+                    player.AddItem(item);
+                }
+                else
+                {
+                    // Create and drop the item at the player's position if the inventory is full
+                    Item droppedItem = Item.Create(item);
+                    droppedItem.CreatePickup(player.Position);
+                }
+            }
+            foreach (var perk in Perks)
+            {
+                player.SyncEffects(perk.Effects);
+            }
+            foreach (var ammo in AmmoBox.ToDictionary())
+            {
+                player.AddAmmo(ammo.Key, ammo.Value);
+            }
+
+            player.MaxHealth = MaxHp;
+            player.Health = player.MaxHealth;
+        }
+
+        /// <summary>
+        /// Adding new items, perks and ammo to player
+        /// Will change the Role, but won't delete an inventory and won't change the location
+        /// </summary>
+        public void AddPreset(Player player)
+        {
+            if (player.Role != this.RoleTypeId)
+                player.Role.Set(this.RoleTypeId, RoleSpawnFlags.None);
+            
+        }
     }
 
     public class PresetOffer : Preset
     {
         public float Cost { get; set; }
 
-        public PresetOffer(string name, List<ItemType> itemTypes, List<Perk> perks, AmmoBox ammoBox, RoleTypeId roleTypeId, float cost) : base(name, itemTypes, perks, ammoBox, roleTypeId)
+        public PresetOffer(string name, List<ItemType> itemTypes, List<Perk> perks, AmmoBox ammoBox, RoleTypeId roleTypeId, float cost, float maxHp = 100) : base(name, itemTypes, perks, ammoBox, roleTypeId, maxHp)
         {
             this.Cost = cost;
         }
@@ -199,7 +279,8 @@ namespace ZombieMod2
                 )
             },
             ammoBox: new AmmoBox(),
-            roleTypeId:RoleTypeId.Scp0492
+            roleTypeId:RoleTypeId.Scp0492,
+            maxHp:200
         );
         
         [Description("Ammo in player's inventory at spawn")]
@@ -289,7 +370,7 @@ namespace ZombieMod2
         };
         
         [Description("Preset store with ready-made equipment\nNew items will be added to player's inventory,\nthose items that do not fit into the inventory will be dropped away\nYou can add your own offers (for example, create Machinegunner)")]
-        public List<PresetOffer> PresetShop1 { get; set; } = new List<PresetOffer>()
+        public List<PresetOffer> PresetShop { get; set; } = new List<PresetOffer>()
         {
             new PresetOffer
             (
@@ -365,6 +446,8 @@ namespace ZombieMod2
         [Description("With Infection mode enabled, every killed MTF will instantly become a zombie")]
         public bool InfectionMode { get; set; } = true;
 
+        [Description("Duration of the preparation stage before the first wave (secs)")]
+        public int StartWavePause { get; set; } = 30;
         [Description("Duration of a wave (secs)")]
         public int WaveDuration { get; set; } = 180;
         [Description("Pause between waves for shopping and movement (secs)")]
