@@ -88,13 +88,15 @@ namespace ZombieMod2
         public List<ItemType> ItemTypes { get; set; }
         public List<Perk> Perks { get; set; }
         public AmmoBox AmmoBox { get; set; }
+        public RoleTypeId RoleTypeId { get; set; }
 
-        public Preset(string name, List<ItemType> itemTypes, List<Perk> perks, AmmoBox ammoBox)
+        public Preset(string name, List<ItemType> itemTypes, List<Perk> perks, AmmoBox ammoBox, RoleTypeId roleTypeId)
         {
             this.Name = name;
             this.ItemTypes = itemTypes;
             this.Perks = perks;
             this.AmmoBox = ammoBox;
+            this.RoleTypeId = roleTypeId;
         }
         public Preset() {}
     }
@@ -103,7 +105,7 @@ namespace ZombieMod2
     {
         public float Cost { get; set; }
 
-        public PresetOffer(string name, List<ItemType> itemTypes, List<Perk> perks, AmmoBox ammoBox, float cost) : base(name, itemTypes, perks, ammoBox)
+        public PresetOffer(string name, List<ItemType> itemTypes, List<Perk> perks, AmmoBox ammoBox, RoleTypeId roleTypeId, float cost) : base(name, itemTypes, perks, ammoBox, roleTypeId)
         {
             this.Cost = cost;
         }
@@ -130,9 +132,9 @@ namespace ZombieMod2
         public bool Debug { get; set; } = false;
         
         [Description("MTF start preset")]
-        public Preset StartPreset { get; set; } = new Preset
+        public Preset StartMtfPreset { get; set; } = new Preset
         (
-            name:"Standart Preset",
+            name:"Standart MTF Preset",
             itemTypes:new List<ItemType>()
             {
                 ItemType.GunCOM15,
@@ -165,7 +167,39 @@ namespace ZombieMod2
             ammoBox:new AmmoBox
             (
                 nato9:60
-            )
+            ),
+            roleTypeId:RoleTypeId.NtfPrivate
+        );
+
+        [Description("Zombie start preset")]
+        public Preset StartZombiePreset { get; set; } = new Preset
+        (
+            name: "Standart Zombie Preset",
+            itemTypes: new List<ItemType>() {},
+            perks: new List<Perk>()
+            {
+                new Perk
+                (
+                    name:"Temp Immortality",
+                    effects: new List<Effect>()
+                    {
+                        new Effect
+                        (
+                            EffectType.MovementBoost,
+                            duration: 10,
+                            intensity: 40
+                        ),
+                        new Effect
+                        (
+                            EffectType.DamageReduction,
+                            duration: 10,
+                            intensity: 200
+                        ),
+                    }
+                )
+            },
+            ammoBox: new AmmoBox(),
+            roleTypeId:RoleTypeId.Scp0492
         );
         
         [Description("Ammo in player's inventory at spawn")]
@@ -253,65 +287,46 @@ namespace ZombieMod2
                 cost:300
                 ),
         };
-
+        
         [Description("Preset store with ready-made equipment\nNew items will be added to player's inventory,\nthose items that do not fit into the inventory will be dropped away\nYou can add your own offers (for example, create Machinegunner)")]
-        public List<Dictionary<string, object>> PresetShop { get; set; } = new List<Dictionary<string, object>>()
+        public List<PresetOffer> PresetShop1 { get; set; } = new List<PresetOffer>()
         {
-            new Dictionary<string, object>()
-            {
-                {"name", "Bomber"},
-                {"cost", 10000},
+            new PresetOffer
+            (
+                name:"Bomber",
+                itemTypes: new List<ItemType>()
                 {
-                    "inventory", new List<ItemType>()
-                    {
-                        ItemType.ArmorCombat,
-                        ItemType.GunCrossvec,
-                        ItemType.GrenadeHE,
-                        ItemType.GrenadeHE,
-                        ItemType.GrenadeHE,
-                        ItemType.Medkit
-                    }
+                    ItemType.ArmorCombat,
+                    ItemType.GunCrossvec,
+                    ItemType.GrenadeHE,
+                    ItemType.GrenadeHE,
+                    ItemType.GrenadeHE,
+                    ItemType.Medkit
                 },
+                perks: new List<Perk>() {},
+                new AmmoBox(nato9:120),
+                cost:10000,
+                roleTypeId:RoleTypeId.NtfPrivate
+            ),
+            new PresetOffer
+            (
+                name:"Medic",
+                itemTypes: new List<ItemType>()
                 {
-                    "ammo", new Dictionary<AmmoType, int>()
-                    {
-                        { AmmoType.Nato9, 120 },
-                        { AmmoType.Nato556, 0 },
-                        { AmmoType.Nato762, 0 },
-                        { AmmoType.Ammo44Cal, 0 },
-                        { AmmoType.Ammo12Gauge, 0 }
-                    }
+                    ItemType.ArmorCombat,
+                    ItemType.GunCrossvec,
+                    ItemType.Adrenaline,
+                    ItemType.GrenadeFlash,
+                    ItemType.Medkit,
+                    ItemType.Medkit
                 },
-                {"RoleType", RoleTypeId.NtfPrivate}
-            },
-            new Dictionary<string, object>()
-            {
-                {"name", "Medic"},
-                {"cost", 7500},
-                {
-                    "inventory", new List<ItemType>()
-                    {
-                        ItemType.ArmorCombat,
-                        ItemType.GunCrossvec,
-                        ItemType.Adrenaline,
-                        ItemType.GrenadeFlash,
-                        ItemType.Medkit,
-                        ItemType.Medkit
-                    }
-                },
-                {
-                    "ammo", new Dictionary<AmmoType, int>()
-                    {
-                        { AmmoType.Nato9, 120 },
-                        { AmmoType.Nato556, 0 },
-                        { AmmoType.Nato762, 0 },
-                        { AmmoType.Ammo44Cal, 0 },
-                        { AmmoType.Ammo12Gauge, 0 }
-                    }
-                },
-                {"RoleType", RoleTypeId.NtfSergeant}
-            },
+                perks: new List<Perk>() {},
+                new AmmoBox(nato9:120),
+                cost:7500,
+                roleTypeId:RoleTypeId.NtfSergeant
+            )
         };
+        
         
         [Description("EffectTypes in the Perk shop for MTF\nYou can add your own offers (for example, create Heavy guy using DamageReduction and Disabled/other)\nEvery perk will be deleted after death")]
         public List<PerkOffer> MtfPerkShop { get; set; } = new List<PerkOffer>()
