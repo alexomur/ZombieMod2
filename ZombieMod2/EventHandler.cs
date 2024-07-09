@@ -6,6 +6,7 @@ using MEC;
 using Exiled.Events.Handlers;
 using PlayerRoles;
 using UnityEngine;
+using Utils.NonAllocLINQ;
 using Random = UnityEngine.Random;
 
 namespace ZombieMod2
@@ -98,7 +99,21 @@ namespace ZombieMod2
                 // Spawning spectators at Wave
                 List<Player> spectators = Player.List.Where(p => p.Role == RoleTypeId.Spectator).ToList();
                 int numberMtfToSpawn = (int)(spectators.Count * Config.MiddleRatioSpawn);
+                
+                if (Mathf.Approximately(Config.MiddleRatioSpawn, 1.0f))
+                {
+                    numberMtfToSpawn = spectators.Count();
+                } else if (Mathf.Approximately(Config.StartRatioSpawn, 0.0f))
+                {
+                    numberMtfToSpawn = 0;
+                }
                 int numberZombiesToSpawn = spectators.Count - numberMtfToSpawn;
+                
+                /*
+                 * TODO:
+                 * Add spawns to MtfSpawns and ZombieSpawns
+                 */
+                
                 spectators = spectators.OrderBy(x => Random.Range(0, spectators.Count)).ToList();
                 foreach (var player in spectators.Take(numberMtfToSpawn))
                 {
