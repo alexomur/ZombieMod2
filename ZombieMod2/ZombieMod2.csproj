@@ -448,7 +448,7 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="Config.cs" />
-        <Compile Include="EventHanlder.cs" />
+        <Compile Include="EventHandler.cs" />
         <Compile Include="ZombieMod2.cs" />
         <Compile Include="Properties\AssemblyInfo.cs"/>
     </ItemGroup>
