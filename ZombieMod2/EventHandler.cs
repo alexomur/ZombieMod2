@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Exiled.API.Enums;
 using Exiled.Events.EventArgs.Server;
 using MEC;
 using Exiled.Events.Handlers;
@@ -45,6 +46,25 @@ namespace ZombieMod2
                 return k * x + b;
             }
             return (float)(Math.Pow(k, WavesPassed) * x + b * (Math.Pow(k, WavesPassed) - 1) / (k - 1));
+        }
+        
+        /// <summary>
+        /// Selects a random room based on weighted probabilities.
+        /// </summary>
+        private RoomType GetRandomRoom(Dictionary<RoomType, int> roomWeights)
+        {
+            int totalWeight = roomWeights.Values.Sum();
+            int randomWeight = Random.Range(0, totalWeight);
+            foreach (var room in roomWeights)
+            {
+                if (randomWeight < room.Value)
+                {
+                    return room.Key;
+                }
+                randomWeight -= room.Value;
+            }
+            // Default to the first room if something goes wrong
+            return roomWeights.Keys.First();
         }
         
         /// <summary>
@@ -109,19 +129,19 @@ namespace ZombieMod2
                 }
                 int numberZombiesToSpawn = spectators.Count - numberMtfToSpawn;
                 
-                /*
-                 * TODO:
-                 * Add spawns to MtfSpawns and ZombieSpawns
-                 */
-                
                 spectators = spectators.OrderBy(x => Random.Range(0, spectators.Count)).ToList();
+                // Spawning MTF
                 foreach (var player in spectators.Take(numberMtfToSpawn))
                 {
-                    Config.StartMtfPreset.SpawnPreset(player);
+                    RoomType mtfRoom = GetRandomRoom(Config.MtfSpawns);
+                    Config.StartMtfPreset.SpawnPreset(player, mtfRoom);
                 }
+
+                // Spawning Zombies
                 foreach (var player in spectators.Skip(numberMtfToSpawn).Take(numberZombiesToSpawn))
                 {
-                    Config.StartZombiePreset.SpawnPreset(player);
+                    RoomType zombieRoom = GetRandomRoom(Config.ZombieSpawns);
+                    Config.StartZombiePreset.SpawnPreset(player, zombieRoom);
                 }
             }
         }
