@@ -131,16 +131,16 @@ namespace ZombieMod2
                 
                 spectators = spectators.OrderBy(x => Random.Range(0, spectators.Count)).ToList();
                 // Spawning MTF
+                RoomType mtfRoom = GetRandomRoom(Config.MtfSpawns);
                 foreach (var player in spectators.Take(numberMtfToSpawn))
                 {
-                    RoomType mtfRoom = GetRandomRoom(Config.MtfSpawns);
                     Config.StartMtfPreset.SpawnPreset(player, mtfRoom);
                 }
 
                 // Spawning Zombies
+                RoomType zombieRoom = GetRandomRoom(Config.ZombieSpawns);
                 foreach (var player in spectators.Skip(numberMtfToSpawn).Take(numberZombiesToSpawn))
                 {
-                    RoomType zombieRoom = GetRandomRoom(Config.ZombieSpawns);
                     Config.StartZombiePreset.SpawnPreset(player, zombieRoom);
                 }
             }
