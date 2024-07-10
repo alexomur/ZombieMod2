@@ -108,7 +108,11 @@ namespace ZombieMod2
         public List<ItemType> ItemTypes { get; set; }
         public List<Perk> Perks { get; set; }
         public AmmoBox AmmoBox { get; set; }
+        
+        [Description("MTF preset must be any Human role, Zombie preset must be any SCP role (Zombie-Human will break the money system)")]
         public RoleTypeId RoleTypeId { get; set; }
+        
+        [Description("Optional parameter\n This parameter for Zombie will increase depending on ZombieHpImprovementFactor \nand ZombieHpImprovementCount according to the formula kx+b every wave\n Default is 100")]
         public float MaxHp { get; set; }
 
         /// <summary>
