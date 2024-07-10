@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Exiled.API.Enums;
+using Exiled.API.Features.Roles;
 using Exiled.Events.EventArgs.Server;
 using MEC;
 using Exiled.Events.Handlers;
@@ -148,8 +149,11 @@ namespace ZombieMod2
 
         private void OnRoundStarted()
         {
+            // Opening a wave coroutine
             isRoundEnded = false;
             WavesPassed = 0;
+            // Spawning everybody as MTF
+            // Will spawn Zombies at coroutine
             foreach (var player in Players)
             {
                 Config.StartMtfPreset.SpawnPreset(player);
@@ -157,14 +161,77 @@ namespace ZombieMod2
             coroutineWave = Timing.RunCoroutine(CoroutineWave());
         }
         
+        private void OnEndingRound(EndingRoundEventArgs ev)
+        {
+            /*
+             * Round summary at Broadcast
+             * Will come later :p
+             */
+            
+            // Closing a wave coroutine
+            isRoundEnded = true;
+            if (coroutineWave.IsRunning)
+                Timing.KillCoroutines(coroutineWave);
+        }
+
+        private void OnDied(DiedEventArgs ev)
+        {
+            /*
+             * EventArgs divided into several parts depending on
+             * what was the situation during killing
+             * Possible situations:
+               * MTF (human) killed Zombie (SCP)
+               * Zombie (SCP) killed MTF (human)
+               * MTF (human) killed MTF (human)
+               * Zombie (SCP) killed Zombie (SCP) (idk how)
+               * Other situation (not processed)
+             * It is necessary to issue or write off money depending on the situation and the number of PassedWaves
+             */
+            Player killer = ev.Attacker;
+            Player died = ev.Player;
+            float difference = 0;
+
+            if (killer.Role.Type.IsHuman() && died.Role.Team == Team.SCPs)
+            {
+                difference += ProgressionByWave(Config.MoneyImprovementFactor, Config.StartMtfMoneyPerKill,
+                    Config.MoneyImprovementCount);
+            }
+            else if (killer.Role.Team == Team.SCPs && died.Role.Type.IsHuman())
+            {
+                difference += ProgressionByWave(Config.MoneyImprovementFactor, Config.StartZombieMoneyPerKill,
+                    Config.MoneyImprovementCount);
+            }
+            else if (killer.Role.Team == died.Role.Team || killer.Role.Type.IsHuman() == died.Role.Type.IsHuman())
+            {
+                difference -= Config.PenaltyForTeamkill;
+            }
+            else
+            {
+                Log.Warn($"Unpredictable situiation at OnDied: Player {killer.Nickname} ({killer.Role}) killed Player {died.Nickname} ({died.Role})");
+            }
+
+            Balances[killer] += difference;
+            /*
+            * Can include a hint about earnings
+            */
+            
+            /*
+             * Can create a coroutine to track multiple kills and other events
+             */
+        }
+        
         public EventHandler()
         {
             Exiled.Events.Handlers.Server.RoundStarted += OnRoundStarted;
+            Exiled.Events.Handlers.Server.EndingRound += OnEndingRound;
+            Exiled.Events.Handlers.Player.Died += OnDied;
         }
 
         ~EventHandler()
         {
             Exiled.Events.Handlers.Server.RoundStarted -= OnRoundStarted;
+            Exiled.Events.Handlers.Server.EndingRound -= OnEndingRound;
+            Exiled.Events.Handlers.Player.Died += OnDied;
         }
 
     }

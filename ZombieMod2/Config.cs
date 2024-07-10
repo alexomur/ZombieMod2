@@ -84,6 +84,11 @@ namespace ZombieMod2
             this.Effects = effects;
         }
         public Perk() {}
+
+        public void AddPerk(Player player)
+        {
+            player.SyncEffects(this.Effects);
+        }
     }
 
     public class PerkOffer : Perk
@@ -109,12 +114,12 @@ namespace ZombieMod2
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="itemTypes"></param>
-        /// <param name="perks"></param>
-        /// <param name="ammoBox"></param>
-        /// <param name="roleTypeId"></param>
-        /// <param name="maxHp">Optional parameter; For StartZombiePreset is equal to StartZombieHp; For other Presets it is equal to 100</param>
+        /// <param name="name">Preset name</param>
+        /// <param name="itemTypes">Items of the form ItemType</param>
+        /// <param name="perks">Effect lists of the form Perk</param>
+        /// <param name="ammoBox">Ammunition sets of all calibers</param>
+        /// <param name="roleTypeId">MTF preset must be any Human role, Zombie preset must be any SCP role (Zombie-Human will break the money system)</param>
+        /// <param name="maxHp">Optional parameter; This parameter for Zombie will increase depending on ZombieHpImprovementFactor and ZombieHpImprovementCount according to the formula kx+b every wave; Default is 100</param>
         public Preset(string name, List<ItemType> itemTypes, List<Perk> perks, AmmoBox ammoBox, RoleTypeId roleTypeId, float maxHp = 100)
         {
             this.Name = name;
@@ -158,7 +163,7 @@ namespace ZombieMod2
             }
             foreach (var perk in Perks)
             {
-                player.SyncEffects(perk.Effects);
+                perk.AddPerk(player);
             }
             foreach (var ammo in AmmoBox.ToDictionary())
             {
@@ -177,7 +182,34 @@ namespace ZombieMod2
         {
             if (player.Role != this.RoleTypeId)
                 player.Role.Set(this.RoleTypeId, RoleSpawnFlags.None);
-            
+            foreach (var item in ItemTypes)
+            {
+                // Check if the player's inventory is full
+                if (player.Inventory.UserInventory.Items.Count < 8)
+                {
+                    player.AddItem(item);
+                }
+                else
+                {
+                    // Create and drop the item at the player's position if the inventory is full
+                    Item droppedItem = Item.Create(item);
+                    droppedItem.CreatePickup(player.Position);
+                }
+            }
+            foreach (var perk in Perks)
+            {
+                perk.AddPerk(player);
+            }
+            foreach (var ammo in AmmoBox.ToDictionary())
+            {
+                player.AddAmmo(ammo.Key, ammo.Value);
+            }
+
+            if (MaxHp > player.MaxHealth)
+            {
+                player.MaxHealth = MaxHp;
+            }
+            player.Health = player.MaxHealth;
         }
     }
 
@@ -282,9 +314,6 @@ namespace ZombieMod2
             roleTypeId:RoleTypeId.Scp0492,
             maxHp:200
         );
-        
-        [Description("Ammo in player's inventory at spawn")]
-        public AmmoBox StartAmmo { get; set; } = new AmmoBox(nato9:90);
 
         [Description("How much will a MTF player get from killing a zombie")]
         public float StartMtfMoneyPerKill { get; set; } = 100;
@@ -301,9 +330,6 @@ namespace ZombieMod2
 
         [Description("How much will all the players get for survived wave (both MTF and Zombies)")]
         public float MoneyPerWave { get; set; } = 50;
-
-        [Description("Initial Zombie HP (at 1st wave)")]
-        public float StartZombieHp { get; set; } = 200f;
 
         [Description("How much HP will zombie get every wave\nFactor - for set the coefficient\nCount - for precise setting\nBoth options work simultaneously (by formula kx+b)")]
         public float ZombieHpImprovementFactor { get; set; } = 1f;
@@ -325,7 +351,27 @@ namespace ZombieMod2
         };
 
         [Description("Information about Jackpot in shop and their cost\nEveryone will know the paid info\nYou can NOT add your own offers\n0 - to disable offer\njackpot_mode must be true")]
-        public List<InfoOffer> InfoShop { get; set; } = new List<InfoOffer>()
+        public List<InfoOffer> MtfInfoShop { get; set; } = new List<InfoOffer>()
+        {
+            new InfoOffer(
+                name:"Jackpot's Appereance",
+                broadcastText:"Jackpot is look like %ItemType%",
+                cost:150
+                ),
+            new InfoOffer(
+                name:"Jackpot's Zone",
+                broadcastText:"Jackpot is in the %Zone%",
+                cost:500
+                ),
+            new InfoOffer(
+                name:"Jackpot's Room",
+                broadcastText:"Jackpot is in the %Room%",
+                cost:5000
+                )
+        };
+
+        [Description("Information about Jackpot in shop and their cost\nEveryone will know the paid info\nYou can NOT add your own offers\n0 - to disable offer\njackpot_mode must be true")]
+        public List<InfoOffer> ZombieInfoShop { get; set; } = new List<InfoOffer>()
         {
             new InfoOffer(
                 name:"Appereance",
