@@ -19,15 +19,18 @@ namespace ZombieMod2.Commands
      * the same: according to the principle below
      
      * For MTF
-     * First, create an item store
-     * Then an information store is created
-     * Then an ammunition store is created
-     * Behind it is a preset store
-     * And a perk store
+     * First, create an item shop
+     * Then an ammunition shop is created
+     * Then an information shop is created
+     * Behind it is a preset shop
+     * And a perk shop
      
      * For Zombie
+     * Information shop
+     * Behind it is a preset shop
+     * And a perk shop
      */
-    
+
     [CommandHandler(typeof(ClientCommandHandler))]
     public class ShopCommand : ICommand
     {
@@ -57,16 +60,67 @@ namespace ZombieMod2.Commands
                 return false;
             }
 
+            response = "";
             int i = 0;
+            int j = 0;
+
+            // If player is a human, its building its own shop with items and ammo
             if (player.Role.Type.IsHuman())
             {
-                response = "MTF shop:";
+                /*
+                 * Can be changed to translation system
+                 */
+                response += "MTF shop:\n--=Item shop=--";
                 for (; i < Config.ItemShop.Count; i++)
                 {
-                    response += $"[{i}] {Config.ItemShop[i].Name}";
+                    response += $"\n[{i}] {Config.ItemShop[i].Name}\n- {Config.ItemShop[i].Description}\nCost: {Config.ItemShop[i].Cost}";
+                }
+                response += "\n--=Ammo shop=--";
+                j = i;
+                for (; i < Config.AmmoShop.Count + j; i++)
+                {
+                    response += $"\n[{i}] {Config.AmmoShop[i].Name}\n- {Config.AmmoShop[i].Description}\nCost: {Config.AmmoShop[i].Cost}";
+                }
+                response += "\n--=Info shop=--";
+                j = i;
+                for (; i < Config.MtfInfoShop.Count + j; i++)
+                {
+                    response += $"\n[{i}] {Config.MtfInfoShop[i].Name}\n- {Config.MtfInfoShop[i].Description}\nCost: {Config.MtfInfoShop[i].Cost}";
+                }
+                response += "\n--=Preset shop=--";
+                j = i;
+                for (; i < Config.MtfPresetShop.Count + j; i++)
+                {
+                    response += $"\n[{i}] {Config.MtfPresetShop[i].Name}\n- {Config.MtfPresetShop[i].Description}\nCost: {Config.MtfPresetShop[i].Cost}";
+                }
+                response += "\n--=Perk shop=--";
+                j = i;
+                for (; i < Config.MtfPresetShop.Count + j; i++)
+                {
+                    response += $"\n[{i}] {Config.MtfPresetShop[i].Name}\n- {Config.MtfPresetShop[i].Description}\nCost: {Config.MtfPresetShop[i].Cost}";
+                }
+            } else
+            {
+                response += "\n--=Info shop=--";
+                j = i;
+                for (; i < Config.ZombieInfoShop.Count + j; i++)
+                {
+                    response += $"\n[{i}] {Config.ZombieInfoShop[i].Name}\n- {Config.ZombieInfoShop[i].Description}\nCost: {Config.ZombieInfoShop[i].Cost}";
+                }
+                response += "\n--=Preset shop=--";
+                j = i;
+                for (; i < Config.ZombiePresetShop.Count + j; i++)
+                {
+                    response += $"\n[{i}] {Config.ZombiePresetShop[i].Name}\n- {Config.ZombiePresetShop[i].Description}\nCost: {Config.ZombiePresetShop[i].Cost}";
+                }
+                response += "\n--=Perk shop=--";
+                j = i;
+                for (; i < Config.ZombiePresetShop.Count + j; i++)
+                {
+                    response += $"\n[{i}] {Config.ZombiePresetShop[i].Name}\n- {Config.ZombiePresetShop[i].Description}\nCost: {Config.ZombiePresetShop[i].Cost}";
                 }
             }
-            
+            return true;
         }
 
         public string Command { get; } = "shop";
