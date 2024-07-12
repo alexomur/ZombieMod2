@@ -447,6 +447,8 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="Commands\BuyCommand.cs" />
+        <Compile Include="Commands\ShopCommand.cs" />
         <Compile Include="Config.cs" />
         <Compile Include="EventHandler.cs" />
         <Compile Include="ZombieMod2.cs" />

@@ -17,12 +17,14 @@ namespace ZombieMod2
         public string Name { get; set; }
         public ItemType ItemType { get; set; }
         public float Cost { get; set; }
+        public string Description { get; set; }
         
-        public ItemOffer(string name, ItemType itemType, float cost)
+        public ItemOffer(string name, ItemType itemType, float cost, string description="")
         {
             this.Name = name;
             this.ItemType = itemType;
             this.Cost = cost;
+            this.Description = description;
         }
         public ItemOffer() {}
     }
@@ -63,18 +65,21 @@ namespace ZombieMod2
         public string Name { get; set; }
         public AmmoBox AmmoBox { get; set; }
         public float Cost { get; set; }
+        public string Description { get; set; }
 
-        public AmmoOffer(string name, AmmoBox ammoBox, float cost)
+        public AmmoOffer(string name, AmmoBox ammoBox, float cost, string description="")
         {
             this.Name = name;
             this.AmmoBox = ammoBox;
             this.Cost = cost;
+            this.Description = description;
         }
         public AmmoOffer() {}
     }
     
     public class Perk
     {
+        [Description("")]
         public string Name { get; set; }
         public List<Effect> Effects { get; set; }
 
@@ -94,10 +99,12 @@ namespace ZombieMod2
     public class PerkOffer : Perk
     {
         public float Cost { get; set; }
+        public string Description { get; set; }
 
-        public PerkOffer(string name, List<Effect> effects, float cost) : base(name, effects)
+        public PerkOffer(string name, List<Effect> effects, float cost, string description="") : base(name, effects)
         {
             this.Cost = cost;
+            this.Description = description;
         }
         public PerkOffer() {}
     }
@@ -220,10 +227,12 @@ namespace ZombieMod2
     public class PresetOffer : Preset
     {
         public float Cost { get; set; }
+        public string Description { get; set; }
 
-        public PresetOffer(string name, List<ItemType> itemTypes, List<Perk> perks, AmmoBox ammoBox, RoleTypeId roleTypeId, float cost, float maxHp = 100) : base(name, itemTypes, perks, ammoBox, roleTypeId, maxHp)
+        public PresetOffer(string name, List<ItemType> itemTypes, List<Perk> perks, AmmoBox ammoBox, RoleTypeId roleTypeId, float cost, float maxHp = 100, string description="") : base(name, itemTypes, perks, ammoBox, roleTypeId, maxHp)
         {
             this.Cost = cost;
+            this.Description = description;
         }
     }
 
@@ -232,12 +241,14 @@ namespace ZombieMod2
         public string Name { get; set; }
         public string BroadcastText { get; set; }
         public float Cost { get; set; }
+        public string Description { get; set; }
 
-        public InfoOffer(string name, string broadcastText, float cost)
+        public InfoOffer(string name, string broadcastText, float cost, string description="")
         {
             this.Name = name;
             this.BroadcastText = broadcastText;
             this.Cost = cost;
+            this.Description = description;
         }
         public InfoOffer() {}
     }
@@ -360,38 +371,27 @@ namespace ZombieMod2
             new InfoOffer(
                 name:"Jackpot's Appereance",
                 broadcastText:"Jackpot is look like %ItemType%",
-                cost:150
+                cost:150,
+                description:"How does Jackpot look like"
                 ),
             new InfoOffer(
                 name:"Jackpot's Zone",
                 broadcastText:"Jackpot is in the %Zone%",
-                cost:500
+                cost:500,
+                description:"Zone of the Jackpot's location"
                 ),
             new InfoOffer(
                 name:"Jackpot's Room",
                 broadcastText:"Jackpot is in the %Room%",
-                cost:5000
+                cost:5000,
+                description:"Room of the Jackpot's location"
                 )
         };
 
-        [Description("Information about Jackpot in shop and their cost\nEveryone will know the paid info\nYou can NOT add your own offers\n0 - to disable offer\njackpot_mode must be true")]
+        [Description("")]
         public List<InfoOffer> ZombieInfoShop { get; set; } = new List<InfoOffer>()
         {
-            new InfoOffer(
-                name:"Appereance",
-                broadcastText:"Jackpot is look like %ItemType%",
-                cost:150
-                ),
-            new InfoOffer(
-                name:"Zone",
-                broadcastText:"Jackpot is in the %Zone%",
-                cost:500
-                ),
-            new InfoOffer(
-                name:"Room",
-                broadcastText:"Jackpot is in the %Room%",
-                cost:5000
-                )
+            
         };
 
         [Description("Any AmmoType in shop\nYou can add your own offers (for example, create 12g Big)")]
@@ -419,8 +419,8 @@ namespace ZombieMod2
                 ),
         };
         
-        [Description("Preset store with ready-made equipment\nNew items will be added to player's inventory,\nthose items that do not fit into the inventory will be dropped away\nYou can add your own offers (for example, create Machinegunner)")]
-        public List<PresetOffer> PresetShop { get; set; } = new List<PresetOffer>()
+        [Description("MTF Preset store with ready-made equipment\nNew items will be added to player's inventory,\nthose items that do not fit into the inventory will be dropped away\nYou can add your own offers (for example, create Machinegunner)")]
+        public List<PresetOffer> MtfPresetShop { get; set; } = new List<PresetOffer>()
         {
             new PresetOffer
             (
@@ -437,7 +437,9 @@ namespace ZombieMod2
                 perks: new List<Perk>() {},
                 new AmmoBox(nato9:120),
                 cost:10000,
-                roleTypeId:RoleTypeId.NtfPrivate
+                maxHp:120,
+                roleTypeId:RoleTypeId.NtfPrivate,
+                description:"Carrying a set of explosives"
             ),
             new PresetOffer
             (
@@ -454,7 +456,34 @@ namespace ZombieMod2
                 perks: new List<Perk>() {},
                 new AmmoBox(nato9:120),
                 cost:7500,
-                roleTypeId:RoleTypeId.NtfSergeant
+                roleTypeId:RoleTypeId.NtfSergeant,
+                description:"Real cool medic"
+            )
+        };
+        
+        [Description("Zombie Preset store with ready-made equipment\nNew items will be added to player's inventory,\nthose items that do not fit into the inventory will be dropped away\nYou can add your own offers (for example, create Low Hp 939)")]
+        public List<PresetOffer> ZombiePresetShop { get; set; } = new List<PresetOffer>()
+        {
+            new PresetOffer
+            (
+                name:"Fatty",
+                itemTypes: new List<ItemType>() { },
+                perks: new List<Perk>()
+                {
+                    new Perk
+                    (
+                        "Fat Guy",
+                        new List<Effect>()
+                        {
+                            new Effect(EffectType.DamageReduction, 0, 40)
+                        }
+                    )
+                },
+                new AmmoBox(),
+                cost:10000,
+                roleTypeId:RoleTypeId.Scp0492,
+                maxHp:1800,
+                description:"Ignoring 20% of any damage"
             )
         };
         
@@ -470,7 +499,8 @@ namespace ZombieMod2
                     new Effect(EffectType.Invigorated, duration:5, intensity:1),
                     new Effect(EffectType.MovementBoost, duration:10, intensity:80),
                 },
-                cost:1000
+                cost:1000,
+                description:"Will make you fast as fact for a while"
             )
         };
 
@@ -484,7 +514,8 @@ namespace ZombieMod2
                 {
                     new Effect(EffectType.Ghostly, duration:5, intensity:1)
                 },
-                cost:50
+                cost:50,
+                description:"Allows you to walk through doors for a short time"
             )
         };
 

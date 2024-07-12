@@ -99,6 +99,11 @@ namespace ZombieMod2
             {
                 // Waiting for the wave to end
                 yield return Timing.WaitForSeconds(Config.WaveDuration);
+                
+                /*
+                 * Broadcast about end of the wave
+                 */
+                
                 // Rewards all players for survival
                 WavesPassed++;
                 foreach (var balance in Balances)
@@ -107,15 +112,21 @@ namespace ZombieMod2
                         Balances[balance.Key] += Config.MoneyPerWave;
                 }
 
+                // Increases MaxHealth for Zombies
                 foreach (var player in players)
                 {
-                    if (player.Role != RoleTypeId.Scp0492) continue;
+                    if (player.Role.Team != Team.SCPs) continue;
                     player.MaxHealth = Config.ZombieHpImprovementFactor * player.MaxHealth +
                                        Config.ZombieHpImprovementCount;
                     player.Health = player.MaxHealth;
                 }
+                
                 // Pause between the waves
                 yield return Timing.WaitForSeconds(Config.WavePause);
+                
+                /*
+                 * Broadcast about start of the wave
+                 */
                 
                 // Spawning spectators at Wave
                 List<Player> spectators = Player.List.Where(p => p.Role == RoleTypeId.Spectator).ToList();
