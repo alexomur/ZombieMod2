@@ -13,20 +13,13 @@ namespace ZombieMod2.Commands
     public class BuyCommand : ICommand
     {
         private Config Config => ZombieMod2.Instance.Config;
-
-        private PerkOffer FindMtfPerkOffer(string name)
-        {
-            foreach (var perkOffer in Config.MtfPerkShop)
-            {
-                if 
-            }
-            return null;
-        }
         
         public bool Execute(ArraySegment<string> argumants, ICommandSender sender, out string response)
         {
-            PerkOffer = 
-            
+            Int32.TryParse(argumants.ToList()[0], out int index);
+
+
+
             response = "Ok!";
             return true;
         }
