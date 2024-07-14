@@ -292,7 +292,7 @@ namespace ZombieMod2
         {
             foreach (var p in ZombieMod2.Instance.Players)
             {
-                p.Broadcast(new Exiled.API.Features.Broadcast(BroadcastText));
+                p.Broadcast(new Exiled.API.Features.Broadcast(this.BroadcastText));
             }
             return true;
         }
@@ -308,7 +308,6 @@ namespace ZombieMod2
         [Description("MTF start preset")]
         public Preset StartMtfPreset { get; set; } = new Preset
         (
-            name:"Standart MTF Preset",
             itemTypes:new List<ItemType>()
             {
                 ItemType.GunCOM15,
@@ -320,7 +319,6 @@ namespace ZombieMod2
             {
                 new Perk
                 (
-                    name:"Temp Immortality",
                     effects: new List<Effect>()
                     {
                         new Effect
@@ -348,13 +346,11 @@ namespace ZombieMod2
         [Description("Zombie start preset")]
         public Preset StartZombiePreset { get; set; } = new Preset
         (
-            name: "Standart Zombie Preset",
             itemTypes: new List<ItemType>() {},
             perks: new List<Perk>()
             {
                 new Perk
                 (
-                    name:"Temp Immortality",
                     effects: new List<Effect>()
                     {
                         new Effect
@@ -422,155 +418,191 @@ namespace ZombieMod2
             ),
         };
 
-        [Description("Information about Jackpot in shop and their cost\nEveryone will know the paid info\nYou can NOT add your own offers\n0 - to disable offer\njackpot_mode must be true")]
-        public List<InfoOffer> MtfInfoShop { get; set; } = new List<InfoOffer>()
+        [Description("Information about Jackpot in shop and their cost\nEveryone will know the paid info\nYou can NOT add your own offers\n cost: 0 - to disable offer\njackpot_mode must be true")]
+        public List<Offer> MtfInfoShop { get; set; } = new List<Offer>()
         {
-            new InfoOffer(
+            new Offer(
+                product: new Info
+                (
+                    broadcastText:"Jackpot is look like %ItemType%"
+                ),
                 name:"Jackpot's Appereance",
-                broadcastText:"Jackpot is look like %ItemType%",
                 cost:150,
                 description:"How does Jackpot look like"
                 ),
-            new InfoOffer(
+            new Offer(
+                product: new Info
+                (
+                    broadcastText:"Jackpot is in the %Zone%"
+                ),
                 name:"Jackpot's Zone",
-                broadcastText:"Jackpot is in the %Zone%",
                 cost:500,
                 description:"Zone of the Jackpot's location"
                 ),
-            new InfoOffer(
+            new Offer(
+                product: new Info
+                (
+                 broadcastText:"Jackpot is in the %Room%"
+                ),
                 name:"Jackpot's Room",
-                broadcastText:"Jackpot is in the %Room%",
                 cost:5000,
                 description:"Room of the Jackpot's location"
-                )
+                ),
         };
 
+        // Desc + example
         [Description("")]
-        public List<InfoOffer> ZombieInfoShop { get; set; } = new List<InfoOffer>()
+        public List<Offer> ZombieInfoShop { get; set; } = new List<Offer>()
         {
-            
+            /*
+             * Nearest MTF player?
+             */
         };
 
         [Description("Any AmmoType in shop\nYou can add your own offers (for example, create 12g Big)")]
-        public List<AmmoOffer> AmmoShop { get; set; } = new List<AmmoOffer>()
+        public List<Offer> AmmoShop { get; set; } = new List<Offer>()
         {
-            new AmmoOffer(
+            new Offer
+            (
+                product: new AmmoBox(nato9:60),
                 name:"9x19 Tiny",
-                ammoBox:new AmmoBox(nato9:60),
-                cost:50
-                ),
-            new AmmoOffer(
+                description: "60 rounds of 9x19",
+                cost: 50
+            ),
+            new Offer
+            (
+                product: new AmmoBox(nato9:200),
                 name:"9x19 Big",
-                ammoBox:new AmmoBox(nato9:200),
-                cost:150
-                ),
-            new AmmoOffer(
+                description: "200 rounds of 9x19",
+                cost: 150
+            ),
+            new Offer
+            (
+                product: new AmmoBox(nato556:60),
                 name:"5.56x45 Tiny",
-                ammoBox:new AmmoBox(nato556:60),
-                cost:100
-                ),
-            new AmmoOffer(
+                description: "60 rounds of 5.56x45",
+                cost: 100
+            ),
+            new Offer
+            (
+                product: new AmmoBox(nato556:200),
                 name:"5.56x45 Big",
-                ammoBox:new AmmoBox(nato556:200),
-                cost:300
-                ),
+                description: "200 rounds of 5.56x45",
+                cost: 300
+            ),
         };
         
         [Description("MTF Preset store with ready-made equipment\nNew items will be added to player's inventory,\nthose items that do not fit into the inventory will be dropped away\nYou can add your own offers (for example, create Machinegunner)")]
-        public List<PresetOffer> MtfPresetShop { get; set; } = new List<PresetOffer>()
+        public List<Offer> MtfPresetShop { get; set; } = new List<Offer>()
         {
-            new PresetOffer
+            new Offer
             (
+                product: new Preset
+                (
+                    itemTypes: new List<ItemType>()
+                    {
+                        ItemType.ArmorCombat,
+                        ItemType.GunCrossvec,
+                        ItemType.GrenadeHE,
+                        ItemType.GrenadeHE,
+                        ItemType.GrenadeHE,
+                        ItemType.Medkit
+                    },
+                    perks: new List<Perk>() {},
+                    new AmmoBox(nato9:120),
+                    maxHp:120,
+                    roleTypeId:RoleTypeId.NtfPrivate
+                ),
                 name:"Bomber",
-                itemTypes: new List<ItemType>()
-                {
-                    ItemType.ArmorCombat,
-                    ItemType.GunCrossvec,
-                    ItemType.GrenadeHE,
-                    ItemType.GrenadeHE,
-                    ItemType.GrenadeHE,
-                    ItemType.Medkit
-                },
-                perks: new List<Perk>() {},
-                new AmmoBox(nato9:120),
-                cost:10000,
-                maxHp:120,
-                roleTypeId:RoleTypeId.NtfPrivate,
-                description:"Carrying a set of explosives"
+                description:"Carrying a set of explosives",
+                cost: 10_000
             ),
-            new PresetOffer
+            new Offer
             (
+                product: new Preset
+                (
+                    itemTypes: new List<ItemType>()
+                    {
+                        ItemType.ArmorCombat,
+                        ItemType.GunCrossvec,
+                        ItemType.Adrenaline,
+                        ItemType.GrenadeFlash,
+                        ItemType.Medkit,
+                        ItemType.Medkit
+                    },
+                    perks: new List<Perk>() {},
+                    new AmmoBox(nato9:120),
+                    roleTypeId:RoleTypeId.NtfSergeant
+                ),
                 name:"Medic",
-                itemTypes: new List<ItemType>()
-                {
-                    ItemType.ArmorCombat,
-                    ItemType.GunCrossvec,
-                    ItemType.Adrenaline,
-                    ItemType.GrenadeFlash,
-                    ItemType.Medkit,
-                    ItemType.Medkit
-                },
-                perks: new List<Perk>() {},
-                new AmmoBox(nato9:120),
-                cost:7500,
-                roleTypeId:RoleTypeId.NtfSergeant,
-                description:"Real cool medic"
+                description:"Real cool medic",
+                cost:7500
             )
         };
         
         [Description("Zombie Preset store with ready-made equipment\nNew items will be added to player's inventory,\nthose items that do not fit into the inventory will be dropped away\nYou can add your own offers (for example, create Low Hp 939)")]
-        public List<PresetOffer> ZombiePresetShop { get; set; } = new List<PresetOffer>()
+        public List<Offer> ZombiePresetShop { get; set; } = new List<Offer>()
         {
-            new PresetOffer
+            new Offer
             (
+                product: new Preset
+                (
+                    itemTypes: new List<ItemType>() { },
+                    perks: new List<Perk>()
+                    {
+                        new Perk
+                        (
+                            new List<Effect>()
+                            {
+                                new Effect(EffectType.DamageReduction, 0, 40)
+                            }
+                        )
+                    },
+                    new AmmoBox(0),
+                    roleTypeId:RoleTypeId.Scp0492,
+                    maxHp:1800
+                ),
                 name:"Fatty",
-                itemTypes: new List<ItemType>() { },
-                perks: new List<Perk>()
-                {
-                    new Perk
-                    (
-                        "Fat Guy",
-                        new List<Effect>()
-                        {
-                            new Effect(EffectType.DamageReduction, 0, 40)
-                        }
-                    )
-                },
-                new AmmoBox(0),
-                cost:10000,
-                roleTypeId:RoleTypeId.Scp0492,
-                maxHp:1800,
-                description:"Ignoring 20% of any damage"
-            )
+                description:"Massive peace of meat. Ignoring 20% of any damage",
+                cost:10_000
+            ),
         };
         
         
-        [Description("EffectTypes in the Perk shop for MTF\nYou can add your own offers (for example, create Heavy guy using DamageReduction and Disabled/other)\nEvery perk will be deleted after death")]
-        public List<PerkOffer> MtfPerkShop { get; set; } = new List<PerkOffer>()
+        [Description("EffectTypes in the Perk shop for MTF\n" +
+            "You can add your own offers (for example, create Heavy guy using DamageReduction and Disabled/other)\n" +
+            "Every perk will be deleted after death")]
+        public List<Offer> MtfPerkShop { get; set; } = new List<Offer>()
         {
-            new PerkOffer
+            new Offer
             (
+                product: new Perk
+                (
+                    effects: new List<Effect>()
+                    {
+                        new Effect(EffectType.Invigorated, duration:5, intensity:1),
+                        new Effect(EffectType.MovementBoost, duration:10, intensity:80),
+                    }
+                ),
                 name:"Close Runner",
-                effects: new List<Effect>()
-                {
-                    new Effect(EffectType.Invigorated, duration:5, intensity:1),
-                    new Effect(EffectType.MovementBoost, duration:10, intensity:80),
-                },
                 cost:1000,
                 description:"Will make you fast as fact for a while"
             )
         };
 
         [Description("EffectTypes in the Perk shop for Zombies\nYou can add your own offers (for example, create Heavy guy using DamageReduction and Disabled/other)\nEvery perk will be deleted after death")]
-        public List<PerkOffer> ZombiePerkShop { get; set; } = new List<PerkOffer>()
+        public List<Offer> ZombiePerkShop { get; set; } = new List<Offer>()
         {
-            new PerkOffer 
+            new Offer 
             (
+                product: new Perk
+                (
+                    effects: new List<Effect>()
+                    {
+                        new Effect(EffectType.Ghostly, duration:5, intensity:1)
+                    }
+                ),
                 name:"Slippery",
-                effects: new List<Effect>()
-                {
-                    new Effect(EffectType.Ghostly, duration:5, intensity:1)
-                },
                 cost:50,
                 description:"Allows you to walk through doors for a short time"
             )
