@@ -31,121 +31,92 @@ namespace ZombieMod2.Commands
      * And a perk shop
      */
 
-    public class Shop
+    public static class Shop
     {
-        private Config Config => ZombieMod2.Instance.Config;
+        private static Config Config => ZombieMod2.Instance.Config;
 
-        List<Offer> GlobalShop;
-        public Shop()
+        public static List<Offer> GlobalShop = new List<Offer>() { };
+
+        public static List<Offer> GenerateShop(Teams team)
         {
-            foreach (Offer offer in Config.ItemShop)
+            GlobalShop = new List<Offer>() { };
+            switch (team)
             {
-                GlobalShop.Add(offer);
-            }
-        }
-
-        public List<Offer> GenerateShop()
-        {
-            return null;
-        }
-
-        [CommandHandler(typeof(ClientCommandHandler))]
-        public class ShopCommand : ICommand
-        {
-            private Config Config => ZombieMod2.Instance.Config;
-
-            public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
-            {
-                Player player;
-                RoleTypeId role;
-                if (sender is PlayerCommandSender playerCommandSender)
-                {
-                    player = Player.Get(playerCommandSender.ReferenceHub);
-                    if (player != null)
-                    {
-                        role = player.Role;
-                    }
-                    else
-                    {
-                        response = $"Sender ({sender.LogName}) is not found!";
-                        Log.Warn($"Sender ({sender.LogName}) is not found! Command: {this.Command}");
-                        return false;
-                    }
-                }
-                else
-                {
-                    response = $"Command ({this.Command}) can only be executed by a player. Sender: {sender.LogName}";
-                    return false;
-                }
-
-                response = "";
-                int i = 0;
-                int j = 0;
-
-                // If player is a human, its building its own shop with items and ammo
-                if (player.Role.Type.IsHuman())
-                {
-                    /*
-                     * Can be changed to translation system
-                     */
-                    response += "MTF shop:\n--=Item shop=--";
-                    for (; i < Config.ItemShop.Count; i++)
-                    {
-                        response += $"\n[{i}] {Config.ItemShop[i].Name}\n- {Config.ItemShop[i].Description}\nCost: {Config.ItemShop[i].Cost}";
-                    }
-                    response += "\n--=Ammo shop=--";
-                    j = i;
-                    for (; i < Config.AmmoShop.Count + j; i++)
-                    {
-                        response += $"\n[{i}] {Config.AmmoShop[i].Name}\n- {Config.AmmoShop[i].Description}\nCost: {Config.AmmoShop[i].Cost}";
-                    }
-                    response += "\n--=Info shop=--";
-                    j = i;
-                    for (; i < Config.MtfInfoShop.Count + j; i++)
-                    {
-                        response += $"\n[{i}] {Config.MtfInfoShop[i].Name}\n- {Config.MtfInfoShop[i].Description}\nCost: {Config.MtfInfoShop[i].Cost}";
-                    }
-                    response += "\n--=Preset shop=--";
-                    j = i;
-                    for (; i < Config.MtfPresetShop.Count + j; i++)
-                    {
-                        response += $"\n[{i}] {Config.MtfPresetShop[i].Name}\n- {Config.MtfPresetShop[i].Description}\nCost: {Config.MtfPresetShop[i].Cost}";
-                    }
-                    response += "\n--=Perk shop=--";
-                    j = i;
-                    for (; i < Config.MtfPresetShop.Count + j; i++)
-                    {
-                        response += $"\n[{i}] {Config.MtfPresetShop[i].Name}\n- {Config.MtfPresetShop[i].Description}\nCost: {Config.MtfPresetShop[i].Cost}";
-                    }
-                }
-                else
-                {
-                    response += "\n--=Info shop=--";
-                    j = i;
-                    for (; i < Config.ZombieInfoShop.Count + j; i++)
-                    {
-                        response += $"\n[{i}] {Config.ZombieInfoShop[i].Name}\n- {Config.ZombieInfoShop[i].Description}\nCost: {Config.ZombieInfoShop[i].Cost}";
-                    }
-                    response += "\n--=Preset shop=--";
-                    j = i;
-                    for (; i < Config.ZombiePresetShop.Count + j; i++)
-                    {
-                        response += $"\n[{i}] {Config.ZombiePresetShop[i].Name}\n- {Config.ZombiePresetShop[i].Description}\nCost: {Config.ZombiePresetShop[i].Cost}";
-                    }
-                    response += "\n--=Perk shop=--";
-                    j = i;
-                    for (; i < Config.ZombiePresetShop.Count + j; i++)
-                    {
-                        response += $"\n[{i}] {Config.ZombiePresetShop[i].Name}\n- {Config.ZombiePresetShop[i].Description}\nCost: {Config.ZombiePresetShop[i].Cost}";
-                    }
-                }
-                return true;
+                case Teams.MtfTeam:
+                    GlobalShop.AddRange(Config.ItemShop);
+                    GlobalShop.AddRange(Config.AmmoShop);
+                    GlobalShop.AddRange(Config.MtfInfoShop);
+                    GlobalShop.AddRange(Config.MtfPresetShop);
+                    GlobalShop.AddRange(Config.MtfPerkShop);
+                    break;
+                case Teams.ZombieTeam:
+                    GlobalShop.AddRange(Config.ZombieInfoShop);
+                    GlobalShop.AddRange(Config.ZombiePresetShop);
+                    GlobalShop.AddRange(Config.ZombiePerkShop);
+                    break;
             }
 
-            public string Command { get; } = "shop";
-            public string[] Aliases { get; } = { };
-            public string Description { get; } = "Shows the shop";
-            public bool SanitizeResponse { get; } = false;
+            return GlobalShop;
         }
     }
-}
+
+ [CommandHandler(typeof(ClientCommandHandler))]
+ public class ShopCommand : ICommand
+ {
+     private Config Config => ZombieMod2.Instance.Config;
+
+     public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
+     {
+         Player player;
+         RoleTypeId role;
+         if (sender is PlayerCommandSender playerCommandSender)
+         {
+             player = Player.Get(playerCommandSender.ReferenceHub);
+             if (player != null)
+             {
+                 role = player.Role;
+             }
+             else
+             {
+                 response = $"Sender ({sender.LogName}) is not found!";
+                 Log.Warn($"Sender ({sender.LogName}) is not found! Command: {this.Command}");
+                 return false;
+             }
+         }
+         else
+         {
+             response = $"Command ({this.Command}) can only be executed by a player. Sender: {sender.LogName}";
+             return false;
+         }
+
+         response = "";
+         List<Offer> shop;
+         if (role.GetTeam() == Team.SCPs)
+         {
+             shop = Shop.GenerateShop(Teams.ZombieTeam);
+         }
+         else
+         {
+             shop = Shop.GenerateShop(Teams.MtfTeam);
+         }
+
+         Type lastType = null;
+         for (int i = 0; i < shop.Count; i++)
+         {
+             Offer offer = shop[i];
+             if (offer.Product.GetType() != lastType)
+                 response += $"--={offer.Product.GetType()} shop=--";
+             response += $"  [{i}] {offer.Name}\n" +
+                         $" Desc: {offer.Description}\n" +
+                         $" Cost: {offer.Cost}\n";
+             lastType = offer.Product.GetType();
+         }
+         return true;
+     }
+
+     public string Command { get; } = "shop";
+     public string[] Aliases { get; } = { };
+     public string Description { get; } = "Shows the shop";
+     public bool SanitizeResponse { get; } = false;
+     }
+ }

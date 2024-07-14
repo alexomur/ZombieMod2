@@ -12,6 +12,12 @@ namespace ZombieMod2
 {
     using Exiled.API.Interfaces;
 
+    public enum Teams
+    {
+        ZombieTeam,
+        MtfTeam
+    }
+    
     public abstract class Product
     {
         public Product() { }
